@@ -5,4 +5,6 @@
 [G. Villard](http://perso.ens-lyon.fr/gilles.villard) 
 
 
-Software material companion to the paper XXX on modular polynomial composition, inverse composition, and modular power projection. 
+Software material companion to a draft on modular polynomial composition, inverse composition, and modular power projection. 
+
+Page under construction. 
