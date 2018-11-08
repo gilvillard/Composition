@@ -19,10 +19,10 @@ the functions require a recent version of SageMath such as SageMath 8.4.
 Files in this folder:
 * Four files with implementations of the algorithms for balanced basis
   computation, modular composition, inverse modular composition, and power
-  projections. The code contains useful comments, and also offers to turn on a
-  verbose mode which outputs some text explaining, when the function is called,
-  what are its main steps. It also gives timings for each step, although they
-  should only be considered as indications for such prototype implementations.
+  projections. The code contains comments and offers to turn on a verbose mode
+  which, when the function is called, prints some text explaining what are its
+  main steps. It also gives timings for each step, although they should only be
+  considered as indications for such prototype implementations.
 * One file ``examples.sage`` containing simple example uses of these functions.
 * One file ``test-suite.sage`` containing tests for each of the defined
   functions; simply running this file in Sage will run these functions
