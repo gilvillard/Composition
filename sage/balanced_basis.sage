@@ -87,9 +87,10 @@ def balanced_basis(g, a, m, store_powers=False, verbose=False):
             for i in range(m-1,0,-1):
                 f_high[i] = f_high[i-1] + lt * g_high[i];
         S.append(S_k)
-        f = (f * a) % g  # a^k mod g
-        if store_powers:
-            pow_a.append(f)
+        if k != 2*d-1:
+            f = (f * a) % g  # a^k mod g
+            if store_powers:
+                pow_a.append(f)
 
     if verbose:
         t_end = time.time()

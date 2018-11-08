@@ -1,4 +1,20 @@
 load('utils.sage')
+load('balanced_basis.sage')
+
+def repeat_test(function, number):
+    # Input: 
+    #   - function is a python function which does not take any argument and
+    #   returns a boolean
+    #   - number is a positive integer
+    # This repeatedly calls 'function', until it returns False or until
+    # 'number' successive calls have returned True
+    # Prints a message indicating success or failure
+    for k in range(number):
+        if not function():
+            print " --> wrong"
+            return
+    print " --> correct"
+    return
 
 print "#################################"
 print "# Testing LINEAR SYSTEM SOLVING #"
@@ -17,8 +33,7 @@ def test_inverse_truncated():
     return B == Matrix.identity(PolyRing, m)
 
 print "Testing truncated inverse via Newton iteration..."
-correct = all([test_inverse_truncated() for i in range(50)])
-print " -->", "correct" if correct else "wrong"
+repeat_test(test_inverse_truncated, 50)
 
 def test_system_solve_expansion():
     p = next_prime(1000000, proof=True)  # using big prime to ensure Prob(A(0) singular) ~ 0
@@ -35,8 +50,7 @@ def test_system_solve_expansion():
     return B == BB
 
 print "Testing expansion of linear system solution..."
-correct = all([test_system_solve_expansion() for i in range(50)])
-print " -->", "correct" if correct else "wrong"
+repeat_test(test_system_solve_expansion, 50)
 
 def test_system_solve():
     p = next_prime(1000000, proof=True)  # using big prime to ensure Prob(A(0) singular) ~ 0
@@ -50,9 +64,7 @@ def test_system_solve():
     return A*X == f*B
 
 print "Testing linear system solving..."
-correct = all([test_system_solve() for i in range(50)])
-print " -->", "correct" if correct else "wrong"
-
+repeat_test(test_system_solve, 50)
 
 print "###########################"
 print "# Testing MATRIX DIVISION #"
@@ -80,9 +92,7 @@ def test_matrix_quo_rem():
     return True
 
 print "Testing polynomial matrix division with remainder..."
-correct = all([test_matrix_quo_rem() for i in range(50)])
-print " -->", "correct" if correct else "wrong"
-
+repeat_test(test_matrix_quo_rem, 50)
 
 print "#############################"
 print "# Testing APPROXIMANT BASIS #"
@@ -95,10 +105,7 @@ def test_approximant_basis():
     order = ZZ.random_element(5,100)
     shift = [ZZ.random_element(0,20) for k in range(n)]
     F = Matrix.random(PolyRing, m, n, degree=order-1)
-    P,cdeg = approximant_basis(F, order, shift)
-    # verify that cdeg is the shift-column degree
-    if cdeg != P.column_degrees(shifts=shift):
-        return False
+    P = approximant_basis(F, order, shift)
     # verify that P is in shift-ordered weak Popov form
     if not P.is_weak_popov(row_wise=False, shifts=shift, ordered=True):
         return False
@@ -121,6 +128,48 @@ def test_approximant_basis():
     return True
 
 print "Testing minimal approximant basis..."
-correct = all([test_approximant_basis() for i in range(15)])
-print " -->", "correct" if correct else "wrong"
+repeat_test(test_approximant_basis, 15)
 
+print "##########################"
+print "# Testing BALANCED BASIS #"
+print "##########################"
+
+def test_balanced_basis():
+    PolyRing.<y> = GF(997)[]
+
+    n = ZZ.random_element(10,100)
+    e = RR.random_element(0.25,0.5)
+    m = ceil(n^e) # this is at least 2
+
+    g = PolyRing.random_element(degree=n).monic()
+    a = PolyRing.random_element(degree=n-1)
+    (B, pow_a) = balanced_basis(g, a, m, store_powers=True)
+
+    # verify that pow_a is formed by powers a^k mod g, for k=0...2*ceil(n/m)-1
+    k=0
+    ak = 1
+    while k < len(pow_a) and pow_a[k] == ak:
+        k += 1
+        ak = (ak*a) % g
+    if k < len(pow_a) or len(pow_a) != 2*ceil(n/m):
+        print len(pow_a)
+        print 2*ceil(n/m)
+        return False
+
+    # verify that B is a generating set for I = <x-a(y), g(y)>
+    PolyRingXY.<X,Y> = GF(997)[]
+    pols_B = [sum([B[i,j](X) * Y^i for i in range(m)]) for j in range(m)]
+    if PolyRingXY.ideal(X-a(Y), g(Y)) != PolyRingXY.ideal(pols_B):
+        return False
+
+    # verify that the polynomials in this generating set have x-degree at most
+    # ceil(n/m)   (they have y-degree < m by construction)
+    for i in range(m):
+        for j in range(m):
+            if B[i,j].degree() > ceil(n/m):
+                return False
+
+    return True
+
+print "Testing balanced basis..."
+repeat_test(test_balanced_basis, 20)
