@@ -18,9 +18,9 @@ def repeat_test(function, number):
     print number, "instances", " --> correct"
     return
 
-print "#################################"
-print "# Testing LINEAR SYSTEM SOLVING #"
-print "#################################"
+print "###########################"
+print "# Testing MATRIX DIVISION #"
+print "###########################"
 
 def test_inverse_truncated():
     p = next_prime(1000000, proof=True)  # using big prime to ensure Prob(A(0) singular) ~ 0
@@ -53,24 +53,6 @@ def test_system_solve_expansion():
 
 print "Testing expansion of linear system solution..."
 repeat_test(test_system_solve_expansion, 50)
-
-def test_system_solve():
-    p = next_prime(1000000, proof=True)  # using big prime to ensure Prob(A(0) singular) ~ 0
-    PolyRing.<x> = GF(p)[]
-    m = ZZ.random_element(3,10)
-    deg = ZZ.random_element(20,40)
-    d = m*deg
-    A = Matrix.random(PolyRing, m, m, degree=deg)
-    B = Matrix.random(PolyRing, m, 1, degree=d)
-    X,f = system_solve(A, B)
-    return A*X == f*B
-
-print "Testing linear system solving..."
-repeat_test(test_system_solve, 50)
-
-print "###########################"
-print "# Testing MATRIX DIVISION #"
-print "###########################"
 
 def test_matrix_quo_rem():
     p = next_prime(1000000, proof=True)  # using big prime to ensure Prob(B row reduced) ~ 1

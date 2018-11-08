@@ -19,5 +19,4 @@ def matrix_shift(A, d):
             A[i,j] = A[i,j].shift(d)
 
 load('./subroutines/approximant-basis.sage')
-load('./subroutines/system-solve.sage')
 load('./subroutines/matrix-division-with-remainder.sage')
