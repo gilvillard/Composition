@@ -1,5 +1,7 @@
 load('utils.sage')
 load('balanced_basis.sage')
+load('inverse_composition.sage')
+load('modular_composition.sage')
 
 def repeat_test(function, number):
     # Input: 
@@ -11,9 +13,9 @@ def repeat_test(function, number):
     # Prints a message indicating success or failure
     for k in range(number):
         if not function():
-            print " --> wrong"
+            print number, "instances", " --> wrong"
             return
-    print " --> correct"
+    print number, "instances", " --> correct"
     return
 
 print "#################################"
@@ -181,9 +183,7 @@ print "###############################"
 def test_inverse_composition():
     PolyRing.<y> = GF(997)[]
 
-    n = ZZ.random_element(10,100)
-    # no large n because Sage's modular composition, used below for testing,
-    # can get quite slow
+    n = ZZ.random_element(10,200)
     e = RR.random_element(0.25,0.5)
     m = ceil(n^e) # this is at least 2
 
@@ -205,3 +205,34 @@ def test_inverse_composition():
 
 print "Testing inverse composition..."
 repeat_test(test_inverse_composition, 20)
+
+print "#######################"
+print "# Testing COMPOSITION #"
+print "#######################"
+
+def test_composition():
+    PolyRing.<y> = GF(997)[]
+    PolyRingX.<x> = GF(997)[]
+
+    n = ZZ.random_element(10,200)
+    e = RR.random_element(0.25,0.5)
+    m = ceil(n^e) # this is at least 2
+
+    g = PolyRing.random_element(degree=n).monic()
+    a = PolyRing.random_element(degree=n-1)
+    h = PolyRingX.random_element(degree=n-1)
+    b = modular_composition(g, a, h, m)
+
+    # verify that b(y) has degree less than n
+    if b.degree() >= n:
+        return False
+
+    # verify that h(a) = b mod g
+    QuoRing.<yy> = PolyRing.quotient(g)
+    if h(a(yy)) != b(yy):
+        return False
+
+    return True
+
+print "Testing composition..."
+repeat_test(test_composition, 20)

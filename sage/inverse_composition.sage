@@ -5,10 +5,14 @@ load('utils.sage')
 #    * generic monic polynomial g of degree n,   #
 #    * generic polynomial a of degree < n,       #
 #    * nonzero polynomial b of degree < n,       #
-#    * block dimension parameter m < n           #
-#  Output:                                       #
+#    * block dimension parameter 2 <= m < n      #
+#  Output (default, if store_basis=False):       #
 #    * polynomial h of degree < n such that      #
 #       h(a) = b mod g                           #
+#  Output (if store_basis=True):                 #
+#    * polynomial h of degree < n such that      #
+#       h(a) = b mod g                           #
+#    * balanced basis B                          #
 ##################################################
 
 def inverse_composition(g, a, b, m, store_basis=False, verbose=False):

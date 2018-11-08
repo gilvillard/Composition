@@ -4,7 +4,7 @@ load('utils.sage')
 #  Input:                                        #
 #    * generic monic polynomial g of degree n,   #
 #    * generic polynomial a of degree < n,       #
-#    * block dimension parameter m < n,          #
+#    * block dimension parameter 2 <= m < n,     #
 #  Output (default, if store_powers=False):      #
 #    * a balanced basis for a and g              #
 #  Output (if store_powers=True):                #

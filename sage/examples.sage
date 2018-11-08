@@ -13,7 +13,7 @@ m=ceil(n^0.2)
 # the used prototype implementation of reconstruction of recurrent matrix
 # sequence is not very efficient
 
-# Balanced basis
+# BALANCED BASIS
 g = PolyRing.random_element(degree=n).monic()
 a = PolyRing.random_element(degree=n-1)
 (B, pow_a) = balanced_basis(g, a, m, store_powers=True, verbose=True)
@@ -22,7 +22,7 @@ a = PolyRing.random_element(degree=n-1)
 # define the quotient ring K[y] / <g>
 QuoRing.<yy> = PolyRing.quotient(g)
 
-# Inverse composition
+# INVERSE COMPOSITION
 b = PolyRing.random_element(degree=n-1)
 h = inverse_composition(g, a, b, m, verbose=True)
 
@@ -31,7 +31,11 @@ if h(a(yy)) == b(yy):
 else:
     print "Inverse composition --> Wrong"
 
+# MODULAR COMPOSITION
+h = PolyRingX.random_element(degree=n-1)
+b = modular_composition(g, a, h, m, verbose=True)
 
-# Modular composition
-#h = PolyRingX.random_element(degree=n-1)
-#b = modular_composition(g, h, a, m, verbose=True)
+if h(a(yy)) == b(yy):
+    print "Composition --> Correct"
+else:
+    print "Composition --> Wrong"
