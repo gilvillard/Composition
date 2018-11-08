@@ -7,7 +7,9 @@
 
 Software material companion to a draft on modular polynomial composition, inverse composition, and modular power projection. 
 
-Page under construction. 
+*Page under construction.*
+
+### Maple worksheets
 
 ### Sage code
 
