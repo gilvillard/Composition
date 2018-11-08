@@ -93,7 +93,7 @@ def approximant_basis_dnc(pmat, order, shift):
         return appbas1*appbas2, cdeg
 
 # Popov approximant basis for uniform shift
-def approximant_basis(pmat, order, shift=None):
+def approximant_basis(pmat, order, shift=None, popov=False):
     ##Input:
     #   * m x n univariate polynomial matrix 'pmat'
     #   * approximation order 'order': a positive integer
@@ -106,11 +106,14 @@ def approximant_basis(pmat, order, shift=None):
         shift=[0]*n
     # compute approximant basis for uniform shift
     appbas,cdeg = approximant_basis_dnc(pmat, order, shift)
-    # deduce pivot degree of Popov form and use them as shifts
-    popov_shift = [shift[i]-cdeg[i] for i in range(n)]
-    # compute approximant basis for this "Popov shift"
-    appbas,cdeg = approximant_basis_dnc(pmat, order, popov_shift)
-    # right-multiply by inverse of leading matrix
-    lmat = appbas.leading_matrix(shifts=popov_shift, row_wise=False)
-    appbas = appbas * lmat.inverse()
-    return appbas
+    if not popov:
+        return appbas
+    else:
+        # deduce pivot degree of Popov form and use them as shifts
+        popov_shift = [shift[i]-cdeg[i] for i in range(n)]
+        # compute approximant basis for this "Popov shift"
+        appbas,cdeg = approximant_basis_dnc(pmat, order, popov_shift)
+        # right-multiply by inverse of leading matrix
+        lmat = appbas.leading_matrix(shifts=popov_shift, row_wise=False)
+        appbas = appbas * lmat.inverse()
+        return appbas

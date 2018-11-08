@@ -48,8 +48,6 @@ def balanced_basis(g, a, m, store_powers=False, verbose=False):
         print "  For a given k in {0...2*d}, this can be seen as the m x m matrix whose"
         print "  row j contains the coefficients of degree 0, 1, ..., m-1 of the "
         print "  polynomial a^k y^j mod g"
-        print "Complexity: O(d M(n) + m n)"
-        print "  Here, d n log_2(n) loglog_2(n) + m n is about", ceil(RR(d*n*log(n,2)*log(log(n,2),2) + m*n))
         t_start = time.time()
 
     # polynomial: -g truncated modulo y^m
@@ -98,7 +96,7 @@ def balanced_basis(g, a, m, store_powers=False, verbose=False):
         t_total += t_end-t_start
         print_separator()
 
-    ## Naive version
+    ## Naive version, much slower
     #SS = []  # sequence of matrices
     #ff = 1   # powers a^k mod g
     #for k in range(2*d):
@@ -118,13 +116,6 @@ def balanced_basis(g, a, m, store_powers=False, verbose=False):
         print "  sequence S[k], k in 0 ... 2*d-1. Our assumption (generic input)"
         print "  ensures that this is an m x m matrix of degree d."
         print "  This matrix is a balanced basis as described above."
-        print "Complexity: O(MM(m,d) log(d)),"
-        print "  where MM(m,d) is the time for multiplication of two"
-        print "  univariate polynomial m x m matrices of degree at most d."
-        print "  Here, m^omega d log_2(d) is about:"
-        print "     ", ceil(RR(m^3*d*log(d,2))), "if omega = 3;"
-        print "     ", ceil(RR(m^2.38*d*log(d,2))), "if omega = 2.38;"
-        print "     ", ceil(RR(m^2*d*log(d,2))), "if omega = 2."
         t_start = time.time()
 
     # reconstruct sequence as a fraction of polynomial matrices
@@ -150,10 +141,6 @@ def balanced_basis(g, a, m, store_powers=False, verbose=False):
         print "Computation time: ", t_end-t_start
         t_total += t_end-t_start
         print_separator()
-
-    ## safety check
-    #Q.<yy> = PolyRing.quotient(g)
-    #print B.det() == Q(a).minpoly()
 
     if store_powers:
         return B, pow_a

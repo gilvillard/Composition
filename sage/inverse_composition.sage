@@ -11,7 +11,7 @@ load('utils.sage')
 #       h(a) = b mod g                           #
 ##################################################
 
-def inverse_composition(g, a, b, m, verbose=False):
+def inverse_composition(g, a, b, m, store_basis=False, verbose=False):
     (PolyRing,y) = g.parent().objgen()
     Field = PolyRing.base_ring()
     PolyRingX.<x> = Field[]
@@ -44,8 +44,6 @@ def inverse_composition(g, a, b, m, verbose=False):
         print "  For a given k in {0...2*d}, this can be seen as the m x m matrix whose"
         print "  row j contains the coefficients of degree 0, 1, ..., m-1 of the "
         print "  polynomial a^k y^j mod g"
-        print "Complexity: O(d M(n) + m n)"
-        print "  Here, d n log_2(n) loglog_2(n) + m n is about", ceil(RR(d*n*log(n,2)*log(log(n,2),2) + m*n))
         t_start = time.time()
 
     # polynomial: -g truncated modulo y^m
@@ -92,7 +90,7 @@ def inverse_composition(g, a, b, m, verbose=False):
         t_total += t_end-t_start
         print_separator()
 
-    ## Naive version
+    ## Naive version, much slower
     #SS = []  # sequence of matrices
     #ff = 1   # powers a^k mod g
     #for k in range(2*d):
@@ -114,8 +112,6 @@ def inverse_composition(g, a, b, m, verbose=False):
         print "  and vb the coefficient vector of the right-hand side b(y)."
         print "  Explicitly, Sb[k] is simply formed by the first m"
         print "  coefficients of the product a^k b mod g."
-        print "Complexity: O(d M(n))"
-        print "  Here, d n log_2(n) loglog_2(n) is about", ceil(RR(d*n*log(n,2)*log(log(n,2),2)))
         t_start = time.time()
 
     # initially Sb contains the vector for k=0, which is the beginning of the
@@ -134,22 +130,15 @@ def inverse_composition(g, a, b, m, verbose=False):
 
     if verbose:
         print "Third step:"
-        # TODO text to be updated
         print "  Compute a column-reduced right matrix generator for the"
         print "  sequence S[k], k in 0 ... 2*d-1. Our assumption (generic input)"
-        print "  ensures that this is an m x m matrix of degree d."
-        print "  This matrix is a balanced basis as described above."
-        print "Complexity: O(MM(m,d) log(d)),"
-        print "  where MM(m,d) is the time for multiplication of two"
-        print "  univariate polynomial m x m matrices of degree at most d."
-        print "  Here, m^omega d log_2(d) is about:"
-        print "     ", ceil(RR(m^3*d*log(d,2))), "if omega = 3;"
-        print "     ", ceil(RR(m^2.38*d*log(d,2))), "if omega = 2.38;"
-        print "     ", ceil(RR(m^2*d*log(d,2))), "if omega = 2."
+        print "  ensures that this is an (m+1) x (m+1) matrix of degree d."
+        print "  This matrix contains a balanced basis as its m x m leading principal"
+        print "  submatrix, while the first m entries of its last column represent"
+        print "  a bivariate composition inverse."
         t_start = time.time()
 
-    # matrix sequence which will be reconstructed as a fraction of polynomial
-    # matrices to give a balanced basis
+    # matrix sequence which allows us to reconstruct the balanced basis
     # F = sum_{0 <= k < 2d+1} S[k] x^(2d-k)
     S.reverse()
     F = Matrix(PolyRingX, m, m)
@@ -157,8 +146,9 @@ def inverse_composition(g, a, b, m, verbose=False):
         for j in range(m):
             F[i,j] = PolyRingX([S[k][i,j] for k in range(2*d)])
 
-    # matrix sequence which will be reconstructed as a bivariate polynomial
-    # of bounded degrees, which solves the inverse composition problem
+    # matrix sequence which allows us to reconstruct a bivariate polynomial
+    # of x-degree at most d and y-degree less than m which solves the inverse
+    # composition problem
     Sb.reverse()
     Fb = Matrix(PolyRingX, m, 1)
     for i in range(m):
@@ -171,22 +161,8 @@ def inverse_composition(g, a, b, m, verbose=False):
 
     # since the approximant basis 'appbas' is in ordered weak Popov form, we
     # know where to look for the balanced basis and the \tilde{h}
-    if appbas[0,0].degree()>0:
-        print "Error in inverse composition: there is no bivariate"
-        print "polynomial hh(x,y) of the specified degree"
-        print "which realizes inverse composition"
     hh = appbas[1:m+1,0]
     B = appbas[1:m+1,1:m+1]
-
-    ## SANITY CHECK
-    #val = sum([(hh[i,0](a) * y**i) % g for i in range(m)])
-    #if val != b:
-    #    print "bivpoly error"
-
-    #for j in range(m):
-    #    val = sum([(B[i,j](a) * y**i) % g for i in range(m)])
-    #    if val != 0:
-    #        print "bb error"
 
     if verbose:
         t_end = time.time()
@@ -195,17 +171,18 @@ def inverse_composition(g, a, b, m, verbose=False):
         print_separator()
 
     if verbose:
-        print "Fourth step: TODO text to be updated"
-        print "  Use balanced basis B and bivariate polynomial hh(x,y)"
-        print "  to deduce univariate polynomial h(x)"
-        print "Complexity: O~(m^omega d),"
-        print "  Here, m^omega d is about:"
-        print "     ", ceil(RR(m^3*d)), "if omega = 3;"
-        print "     ", ceil(RR(m^2.38*d)), "if omega = 2.38;"
-        print "     ", ceil(RR(m^2*d)), "if omega = 2."
+        print "Fourth step:"
+        print "  From a balanced basis B and a bivariate polynomial hh(x,y) which"
+        print "  solves the inverse composition problem (under the assumption that"
+        print "  a balanced basis for m exists, then such a bivariate polynomial"
+        print "  exists), find a univariate polynomial h(x) which solves the"
+        print "  inverse composition problem, if it exists"
         t_start = time.time()
 
-    # use kernel basis (TODO clean this part)
+    # use kernel basis to find h(x) from B and hh
+    # Warning: we directly use approximant basis at large order m*d, which has
+    # cost bound O~(m^{w+1} d). For a faster solution in O~(m^{w+1} d), one
+    # may rather use the kernel algorithm of Zhou-Labahn-Storjohann, ISSAC 2012
     sysmat = Matrix.block([[hh[1:,0], B[1:,:]]])
     kerbas = approximant_basis(sysmat, m*d, [m*d]+[0]*m)
     coeffs = kerbas[1:,0]
@@ -213,8 +190,7 @@ def inverse_composition(g, a, b, m, verbose=False):
 
     # existence check
     if kerbas[0,0].degree()>0:
-        print "Error in inverse composition: no solution"
-        print "(linear system fail)"
+        print "!!!!!Error in inverse composition: no solution!!!!!"
 
     if verbose:
         t_end = time.time()
@@ -222,4 +198,7 @@ def inverse_composition(g, a, b, m, verbose=False):
         t_total += t_end-t_start
         print_separator()
 
-    return h, B
+    if store_basis:
+        return h, B
+    else:
+        return h

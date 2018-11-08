@@ -7,45 +7,31 @@ load('modular_composition.sage')
 PolyRing.<y> = GF(997)[]
 PolyRingX.<x> = GF(997)[]
 
-n=110
-m=ceil(n^0.33)
+n=2000
+m=ceil(n^0.2)
+# we choose exponent 0.2 instead of 1/omega (~0.33 in Sage), since
+# the used prototype implementation of reconstruction of recurrent matrix
+# sequence is not very efficient
 
 # Balanced basis
-#g = PolyRing.random_element(degree=n).monic()
-#a = PolyRing.random_element(degree=n-1)
-#(B, pow_a) = balanced_basis(g, a, m, store_powers=True, verbose=True)
+g = PolyRing.random_element(degree=n).monic()
+a = PolyRing.random_element(degree=n-1)
+(B, pow_a) = balanced_basis(g, a, m, store_powers=True, verbose=True)
+# with store_powers=True, it also returns pow_a which contains a^k mod g for k in range(2ceil(n/m))
+
+# define the quotient ring K[y] / <g>
+QuoRing.<yy> = PolyRing.quotient(g)
 
 # Inverse composition
-#g = PolyRing.random_element(degree=n).monic()
-#a = PolyRing.random_element(degree=n-1)
-#b = PolyRing.random_element(degree=n-1)
-n = 4
-m = 2
-g = y^4
-a = y^2
-b = PolyRing(y)
-(h, B) = inverse_composition(g, a, b, m, verbose=True)
-if h(a) % g == b:
-    print "Inverse composition: correct"
+b = PolyRing.random_element(degree=n-1)
+h = inverse_composition(g, a, b, m, verbose=True)
+
+if h(a(yy)) == b(yy):
+    print "Inverse composition --> Correct"
 else:
-    print "Inverse composition: error"
+    print "Inverse composition --> Wrong"
 
 
-#if False:
-#    # Check same ideal (incidentally, tests gg == B.det() == charpoly(a mod g))
-#    H = hermite_form(B)
-#    gg = H[0,0]
-#    aa = -H[0,1]
-#    bivPolyRing.<X,Y> = GF(997)[]
-#    I1 = bivPolyRing.ideal(g(Y), X-a(Y))
-#    I2 = bivPolyRing.ideal(gg(X), Y-aa(X))
-#    print "Change of order lex(x<y) --> lex(x>y) ?", I1 == I2
-#
-#    # Inverse composition
-#    b = PolyRing.random_element(degree=n-1)
-#    h = b(aa(x)) % gg(x)
-#    print "Inverse composition via composition ?", b == h(a) % g
-
-## Modular composition
+# Modular composition
 #h = PolyRingX.random_element(degree=n-1)
 #b = modular_composition(g, h, a, m, verbose=True)

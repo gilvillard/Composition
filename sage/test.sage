@@ -173,3 +173,35 @@ def test_balanced_basis():
 
 print "Testing balanced basis..."
 repeat_test(test_balanced_basis, 20)
+
+print "###############################"
+print "# Testing INVERSE COMPOSITION #"
+print "###############################"
+
+def test_inverse_composition():
+    PolyRing.<y> = GF(997)[]
+
+    n = ZZ.random_element(10,100)
+    # no large n because Sage's modular composition, used below for testing,
+    # can get quite slow
+    e = RR.random_element(0.25,0.5)
+    m = ceil(n^e) # this is at least 2
+
+    g = PolyRing.random_element(degree=n).monic()
+    a = PolyRing.random_element(degree=n-1)
+    b = PolyRing.random_element(degree=n-1)
+    h = inverse_composition(g, a, b, m)
+
+    # verify that h(x) has degree less than n
+    if h.degree() >= n:
+        return False
+
+    # verify that h(a) = b mod g
+    QuoRing.<yy> = PolyRing.quotient(g)
+    if h(a(yy)) != b(yy):
+        return False
+
+    return True
+
+print "Testing inverse composition..."
+repeat_test(test_inverse_composition, 20)
