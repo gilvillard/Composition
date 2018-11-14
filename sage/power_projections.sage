@@ -66,9 +66,10 @@ def power_projections(g, a, ell, m, verbose=False):
     if verbose:
         print "Third step:"
         print "  compute ell*P, where P is the numerator associated to B,"
-        print "  that is, P(x) = (xId - A)^(-1) Matrix.block([[B], [0]]), where"
-        print "  A is the multiplication matrix of a in K[y] / <g> in the"
-        print "  monomial basis, and the zero block has dimension (n-m) x m."
+        print "  that is, P(x) = C(x) B(x), where C consists of the first m"
+        print "  columns of (xId - A)^(-1), where A is the multiplication"
+        print "  matrix of a in K[y] / <g> in the monomial basis."
+        print "  P is an n x m matrix of degree less than d."
         t_start = time.time()
 
     if verbose:
@@ -87,24 +88,35 @@ def power_projections(g, a, ell, m, verbose=False):
 
     ellAk = copy(ell)
     ellA = [ellAk] # initialize with term for k=0
-    for k in range(1,d):
+    for k in range(1,d+1):
         ellAk = ellAk * A  # now ellAk = ell * A**k
         ellAk.append(ellAk)
-    
-    
 
     if verbose:
         t_end1 = time.time()
-        print "Computation time: ", t_end1-t_start1
+        print "--Computation time: ", t_end1-t_start1
         print "--Third step, second substep:"
-        print "    Compute the row vectors ell * A^k for k in range(d)"
-        print "    Algorithm: see Lemma 3.1"
+        print "    deduce ell*P by polynomial vector-matrix multiplication:"
+        print "    for v(x) the first m entries of the vector"
+        print "    sum_{0 <= k <= d} ell * A^k x^{-k-1}, we have"
+        print "    ell*P = terms of degree >= 0 of v(x) * B(x)"
         t_start1 = time.time()
+
+    # compute v(x) = first m entries of the vector
+    #     sum_{0 <= k <= d} ell * A^k x^{d-k}"
+    # (note the nonnegative exponent d-k, rather than -k-1,
+    # used for convenience in the code)
+    # --> we will look at terms of degree >= d+1
+    ellA.reverse()
+    v = Matrix(PolyRingX, 1, m, sum([ellA[k][:m] * x**k for k in range(d+1)]))
+    ellP = matrix_shift(v * B, -d-1)
 
 
     if verbose:
+        t_end1 = time.time()
+        print "--Computation time: ", t_end1-t_start1
         t_end = time.time()
-        print "Computation time (third step): ", t_end-t_start
+        print "Computation time (total third step): ", t_end-t_start
         t_total += t_end-t_start
         print_separator()
 
