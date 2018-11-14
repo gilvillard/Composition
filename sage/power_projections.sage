@@ -41,7 +41,7 @@ def power_projections(g, a, ell, m, verbose=False):
         print "  Compute a balanced basis for a and g"
         t_start = time.time()
 
-    B, pow_a = balanced_basis(g, a, m, store_powers=True, verbose=False)
+    B = balanced_basis(g, a, m, verbose=False)
 
     if verbose:
         t_end = time.time()
@@ -51,11 +51,17 @@ def power_projections(g, a, ell, m, verbose=False):
 
     if verbose:
         print "Second step:"
-        print "  retrieve the determinant of the balanced basis"
-        print "  -> this is a polynomial f(x) of degree n"
+        print "  Retrieve the determinant of the balanced basis B(x)"
+        print "  -> this is a polynomial f(x) of degree n, resultant"
+        print "  in x of x-a(y) and g(y)."
+        print "  Also retrieve the quotient vector v_q(x) defined as"
+        print "  v_q(x) = B(x)^(-1) [f(x) 0 .. 0].T"
+        print "  -> this is a mx1 polynomial vector of degree <= n"
         t_start = time.time()
 
     f = B.determinant()
+    v_f = Matrix(PolyRingX, m, 1, [f]+[0]*(m-1))
+    v_q,v_r = matrix_quo_rem(v_f, B)
 
     if verbose:
         t_end = time.time()
@@ -84,13 +90,13 @@ def power_projections(g, a, ell, m, verbose=False):
     for j in range(n):
         coeffs = list(a*y^j % g)
         # pad with zeroes if necessary
-        A[:,j] = Matrix(n, 1, coeffs + [0]*(n-len(coeffs)))
+        A[:,j] = Matrix(Field, n, 1, coeffs + [0]*(n-len(coeffs)))
 
-    ellAk = copy(ell)
+    ellAk = Matrix(Field, 1, n, ell)
     ellA = [ellAk] # initialize with term for k=0
     for k in range(1,d+1):
         ellAk = ellAk * A  # now ellAk = ell * A**k
-        ellAk.append(ellAk)
+        ellA.append(ellAk)
 
     if verbose:
         t_end1 = time.time()
@@ -108,9 +114,9 @@ def power_projections(g, a, ell, m, verbose=False):
     # used for convenience in the code)
     # --> we will look at terms of degree >= d+1
     ellA.reverse()
-    v = Matrix(PolyRingX, 1, m, sum([ellA[k][:m] * x**k for k in range(d+1)]))
-    ellP = matrix_shift(v * B, -d-1)
-
+    v = sum([ellA[k][0,:m] * x**k for k in range(d+1)])
+    ellP = v * B
+    matrix_shift(ellP, -d-1)
 
     if verbose:
         t_end1 = time.time()
@@ -120,4 +126,22 @@ def power_projections(g, a, ell, m, verbose=False):
         t_total += t_end-t_start
         print_separator()
 
-    return b
+    if verbose:
+        print "Fourth step:"
+        print "  Compute the numerator num = ell * P * v_q, and deduce the" 
+        print "  power projections by expanding the fraction num(x) / f(x)."
+        t_start = time.time()
+
+    num = ellP * v_q
+
+    # define power series ring, at precision n since we want n terms ell(1),...,ell(a^{n-1})
+    PowSer.<tt> = PowerSeriesRing(Field, default_prec=n)
+    series = num(tt) / f(tt)
+
+    if verbose:
+        t_end = time.time()
+        print "Computation time: ", t_end-t_start
+        t_total += t_end-t_start
+        print_separator()
+
+    return series
