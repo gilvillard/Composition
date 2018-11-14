@@ -102,7 +102,7 @@ def balanced_basis(g, a, m, store_powers=False, verbose=False):
     #for k in range(2*d):
     #    # initialize S[k] with mxm zero matrix
     #    SS_k = Matrix(Field,m,m)
-    #    # for each 0<=j<m, compute first m coefficients of a*y^j mod g
+    #    # for each 0<=j<m, compute first m coefficients of a^k*y^j mod g
     #    for j in range(m):
     #        coeffs = list(ff*y^j % g)
     #        # take first m coeffs, padding with zeroes if necessary
