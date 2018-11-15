@@ -2,6 +2,7 @@ load('utils.sage')
 load('balanced_basis.sage')
 load('inverse_composition.sage')
 load('modular_composition.sage')
+load('power_projections.sage')
 
 def repeat_test(function, number):
     # Input: 
@@ -218,3 +219,42 @@ def test_composition():
 
 print "Testing composition..."
 repeat_test(test_composition, 20)
+
+print "#############################"
+print "# Testing POWER PROJECTIONS #"
+print "#############################"
+
+def test_power_projections():
+    PolyRing.<y> = GF(997)[]
+    PolyRingX.<x> = GF(997)[]
+
+    n = ZZ.random_element(10,200)
+    e = RR.random_element(0.25,0.5)
+    m = ceil(n^e) # this is at least 2
+
+    g = PolyRing.random_element(degree=n).monic()
+    a = PolyRing.random_element(degree=n-1)
+    elly = [GF(997).random_element() for k in range(n)]
+    ella = power_projections(g, a, elly, m)
+
+    # verify that ella has length n
+    if len(ella) != n:
+        return False
+
+    # verify that ella[k] = ell(a^k mod g)
+    if ella[0] != elly[0]:
+        return False
+    QuoRing.<yy> = PolyRing.quotient(g)
+    ak = a(yy)
+    for k in range(1,n):
+        coeffs = list(ak)
+        coeffs = coeffs + [0]*(n-len(coeffs))
+        ellak = (Matrix(GF(997),1,n,elly) * Matrix(GF(997),n,1,coeffs))[0,0]
+        if ellak != ella[k]:
+            return False
+        ak = ak * a(yy)
+
+    return True
+
+print "Testing power projections..."
+repeat_test(test_power_projections, 15)

@@ -84,8 +84,9 @@ def power_projections(g, a, ell, m, verbose=False):
         print "    Algorithm: see Lemma 3.1"
         t_start1 = time.time()
 
-    print "Warning: the implementation currently uses a naive algorithm which"
-    print "computes the matrix A"
+    # TODO Warning: for simplicity, the implementation currently uses a naive
+    # algorithm which computes the matrix A (this could be replaced by the faster
+    # algorithm of Lemma 3.1, without impacting the correctness)
     A = Matrix(Field,n,n) # initialize S[k] with mxm zero matrix
     # for each 0<=j<n, compute the n coefficients of a*y^j mod g
     for j in range(n):
