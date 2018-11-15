@@ -84,7 +84,8 @@ def power_projections(g, a, ell, m, verbose=False):
         print "    Algorithm: see Lemma 3.1"
         t_start1 = time.time()
 
-    # TODO prototype: for the moment, naive algorithm computing the matrix A
+    print "Warning: the implementation currently uses a naive algorithm which"
+    print "computes the matrix A"
     A = Matrix(Field,n,n) # initialize S[k] with mxm zero matrix
     # for each 0<=j<n, compute the n coefficients of a*y^j mod g
     for j in range(n):
@@ -133,10 +134,11 @@ def power_projections(g, a, ell, m, verbose=False):
         t_start = time.time()
 
     num = ellP * v_q
+    num = num[0,0] # retrieve the single coefficient of this 1 x 1 matrix
 
     # define power series ring, at precision n since we want n terms ell(1),...,ell(a^{n-1})
     PowSer.<tt> = PowerSeriesRing(Field, default_prec=n)
-    series = num(tt) / f(tt)
+    series = num(tt^(-1)) / f(tt^(-1))
 
     if verbose:
         t_end = time.time()
@@ -144,4 +146,4 @@ def power_projections(g, a, ell, m, verbose=False):
         t_total += t_end-t_start
         print_separator()
 
-    return series
+    return [series[j] for j in range(1,n+1)]

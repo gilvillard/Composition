@@ -8,8 +8,7 @@ load('power_projections.sage')
 PolyRing.<y> = GF(997)[]
 PolyRingX.<x> = GF(997)[]
 
-#n=2000
-n=16
+n=400
 m=ceil(n^0.2)
 # we choose exponent 0.2 instead of 1/omega (~0.33 in Sage), since
 # the used prototype implementation of reconstruction of recurrent matrix
@@ -46,19 +45,7 @@ else:
 elly = [GF(997).random_element() for k in range(n)]
 ella = power_projections(g, a, elly, m, verbose=True)
 
-print ella
-print elly[0]
-k=1
-ak = a(yy)
-for k in range(n):
-    coeffs = list(ak)
-    coeffs = coeffs + [0]*(n-len(coeffs))
-    ellak = (Matrix(GF(997),1,n,elly) * Matrix(GF(997),n,1,coeffs))[0,0]
-    ak = ak * a(yy)
-    print ellak
-
-
-# naive recomputation of power projections
+print "naive recomputation of power projections for testing purposes..."
 correct = (ella[0] == elly[0])
 k=1
 ak = a(yy)
